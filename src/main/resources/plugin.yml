@@ -1,0 +1,4 @@
+name: ${pluginName}
+version: '${pluginVersion}'
+main: blue.nightmarish.${packageName}.${pluginName}
+api-version: '${apiVersion}'
