@@ -1,7 +1,6 @@
 package blue.nightmarish.pvpermsmanager.event;
 
 import blue.nightmarish.pvpermsmanager.PvPermsManager;
-import lombok.Getter;
 import me.NoChance.PvPManager.Events.PlayerTogglePvPEvent;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.model.data.DataMutateResult;
@@ -13,47 +12,35 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
-import static blue.nightmarish.pvpermsmanager.PvPermsManager.LOGGER;
-import static blue.nightmarish.pvpermsmanager.PvPermsManager.PVP_GROUP;
-
 public class PvPToggleStateListener implements Listener {
     private final PvPermsManager plugin;
-    private final LuckPerms luckPerms;
 
-    public PvPToggleStateListener(PvPermsManager plugin, LuckPerms luckPerms) {
+    public PvPToggleStateListener(PvPermsManager plugin) {
         this.plugin = plugin;
-        this.luckPerms = luckPerms;
-
-        // whenever this object is spawned, let's see if we have the group actually in it
-        Group group = this.luckPerms.getGroupManager().getGroup(PVP_GROUP);
-        if (group == null)
-            LOGGER.info("The group '" + PVP_GROUP + "' was not found");
-        else
-            LOGGER.info("Ready to add the '" + PVP_GROUP + "' group to and from members");
     }
 
     @EventHandler
     public void onPlayerTogglePvPEvent(PlayerTogglePvPEvent event) {
         Player player = event.getPlayer();
+        String groupName = plugin.getPvPGroupName();
+
         boolean isPvPOnNow = event.getPvPState();
-        boolean playerHasPvPGroup = player.hasPermission("group." + PVP_GROUP);
+        boolean playerHasPvPGroup = player.hasPermission("group." + groupName);
 
         if (isPvPOnNow) {
-            if (!playerHasPvPGroup) {
-                DataMutateResult output = addGroup(player, PVP_GROUP);
-            }
+            if (!playerHasPvPGroup) addGroup(player, groupName);
         } else {
-            if (playerHasPvPGroup) removeGroup(player, PVP_GROUP);
+            if (playerHasPvPGroup) removeGroup(player, groupName);
         }
     }
 
     public DataMutateResult addGroup(Player player, String groupName) {
         final DataMutateResult[] result = {DataMutateResult.FAIL}; // fuck Java lambdas
 
-        Group group = this.luckPerms.getGroupManager().getGroup(groupName);
+        Group group = plugin.luckPerms.getGroupManager().getGroup(groupName);
         if (group == null) return result[0]; // return generic fail if the group doesn't exist
 
-        luckPerms.getUserManager().modifyUser(player.getUniqueId(), (User user) -> {
+        plugin.luckPerms.getUserManager().modifyUser(player.getUniqueId(), (User user) -> {
             Node newNode = InheritanceNode.builder(group).build();
             result[0] = user.data().add(newNode);
         });
@@ -63,10 +50,10 @@ public class PvPToggleStateListener implements Listener {
     public DataMutateResult removeGroup(Player player, String groupName) {
         final DataMutateResult[] result = {DataMutateResult.FAIL}; // fuck Java lambdas
 
-        Group group = this.luckPerms.getGroupManager().getGroup(groupName);
+        Group group = plugin.luckPerms.getGroupManager().getGroup(groupName);
         if (group == null) return result[0]; // return generic fail if the group doesn't exist
 
-        luckPerms.getUserManager().modifyUser(player.getUniqueId(), (User user) -> {
+        plugin.luckPerms.getUserManager().modifyUser(player.getUniqueId(), (User user) -> {
             Node prevNode = InheritanceNode.builder(group).build();
             result[0] = user.data().remove(prevNode);
         });

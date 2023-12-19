@@ -5,3 +5,21 @@ api-version: '${apiVersion}'
 
 depend:
   - LuckPerms
+
+permissions:
+  pvpermsmanager.reload:
+    description: Allows you to reload the plugin's config file in-game
+    default: op
+  pvpermsmanager.setgroup:
+    description: Allows you to change the PvP group
+    default: op
+
+commands:
+  reload:
+    description: Reload the plugin's config
+    usage: /<command>
+    permission: pvpermsmanager.reload
+  setgroup:
+    description: Set the group given to players with PvP (does nothing if the new group does not exist)
+    usage: /<command> <group>
+    permission: pvpermsmanager.setgroup
